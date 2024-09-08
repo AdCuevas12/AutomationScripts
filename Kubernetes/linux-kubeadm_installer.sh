@@ -16,6 +16,7 @@ print_menu() {
     local array_name=$1
     local menu_array=("${!array_name}")
     clear
+    echo -e "If you're not sure, just exit the choose exit and run: ${BYellow}cat /etc/*release*${NC} and try again."
     echo -e "${BYellow}Please Select your current Linux Distro:${NC}"
     for i in "${!menu_array[@]}"; do
         if [ $i -eq $current_option ]; then
