@@ -15,27 +15,6 @@ run_as_sudo() {
     echo "$user_password" | sudo -S "$@"
 }
 
-check_files() {
-    required_files=("node_exporter.crt", "node_exporter.key")
-    missing_files=()
-    
-    for file in "${required_files[@]}"; do
-        if [ ! -e "$file" ]; then
-            missing_files+=("$file")
-        fi
-    done
-
-    if [ ${#missing_files[@]} -ne 0 ]; then
-        echo -e "${BRed}The certificate and key are not  in the current directory. Missing the following files:${NC}"
-        for file in "${missing_files[@]}"; do
-            echo -e "  - ${BRed}$file${NC}"
-        done
-        exit 1
-    else
-        echo -e "${BGreen}TLS certificate and key are present.${NC}"
-    fi
-}
-
 # Check if the necessary files exist
 
 if [ $username = "root" ]; then
@@ -43,7 +22,6 @@ if [ $username = "root" ]; then
 
     #Run TLS Authentication
     openssl req -new -newkey rsa:2048 -days 365 -nodes -x509 -keyout node_exporter.key -out node_exporter.crt -subj "/C=PH/ST=Manila/L=Mandaluyong/O=MyOrg/CN=localhost" -addext "subjectAltName = DNS:localhost"
-    check_files
     bash -c 'cat <<EOF > config.yaml
 tls_server_config:
   cert_file: node_exporter.crt
@@ -53,9 +31,10 @@ EOF'
     mv node_exporter.* /etc/node_exporter
     cp config.yaml /etc/node_exporter
     chown -R node_exporter:node_exporter /etc/node_exporter
-
+    sed -i 's|ExecStart=/usr/local/bin/node_exporter|ExecStart=/usr/local/bin/node_exporter --web.config=/etc/node_exporter/config.yml|g' /etc/systemd/system/node_exporter.service
     # Reload systemd daemon
     systemctl daemon-reload
+    systemctl restart node_exporter
     echo -e "${GREEN}TLS Configured Successfully${NC}"
     echo "=========================="
     echo "What's next?"
@@ -69,20 +48,20 @@ else
     # Verify the password by running a simple sudo command
     if echo "$user_password" | sudo -S true >/dev/null 2>&1; then
         #Run TLS Authentication
-        openssl req -new -newkey rsa:2048 -days 365 -nodes -x509 -keyout node_exporter.key -out node_exporter.crt -subj "/C=PH/ST=Manila/L=Mandaluyong/O=MyOrg/CN=localhost" -addext "subjectAltName = DNS:localhost"
-        check_files
+        run_as_sudo openssl req -new -newkey rsa:2048 -days 365 -nodes -x509 -keyout node_exporter.key -out node_exporter.crt -subj "/C=PH/ST=Manila/L=Mandaluyong/O=MyOrg/CN=localhost" -addext "subjectAltName = DNS:localhost"
         bash -c 'cat <<EOF > config.yaml
 tls_server_config:
   cert_file: node_exporter.crt
   key_file: node_exporter.key
 EOF'
-        mkdir /etc/node_exporter
-        mv node_exporter.* /etc/node_exporter
-        cp config.yaml /etc/node_exporter
-        chown -R node_exporter:node_exporter /etc/node_exporter
-
+        run_as_sudo mkdir /etc/node_exporter
+        run_as_sudo mv node_exporter.* /etc/node_exporter
+        run_as_sudo cp config.yaml /etc/node_exporter
+        run_as_sudo chown -R node_exporter:node_exporter /etc/node_exporter
+        run_as_sudo sed -i 's|ExecStart=/usr/local/bin/node_exporter|ExecStart=/usr/local/bin/node_exporter --web.config=/etc/node_exporter/config.yml|g' /etc/systemd/system/node_exporter.service
         # Reload systemd daemon
-        systemctl daemon-reload
+        run_as_sudo systemctl daemon-reload
+        run_as_sudo systemctl restart node_exporter
         echo -e "${GREEN}TLS Configured Successfully${NC}"
         echo "=========================="
         echo "What's next?"
