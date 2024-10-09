@@ -169,6 +169,7 @@ EOF
 
         # Install Flannel CNI plugin
         echo -e "${BYellow}Installing Flannel CNI plugin...${NC}"
+        kubectl create -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel-rbac.yml
         kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
         echo -e "${BGreen}Flannel CNI plugin installed.${NC}"
     else
@@ -276,6 +277,7 @@ EOF
 
         # Install Flannel CNI plugin
         echo -e "${BYellow}Installing Flannel CNI plugin...${NC}"
+        kubectl create -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel-rbac.yml
         kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
         echo -e "${BGreen}Flannel CNI plugin installed.${NC}"
     else
