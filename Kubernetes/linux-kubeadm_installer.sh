@@ -292,12 +292,12 @@ current_option=0
 navigate_menu 'options1'
 selected_option="${options1[$current_option]}"
 if [ $selected_option = "Centos" ]; then
-    read -p "Enter Kubernetes version (e.g., 1.31): " K8sVersion
+    read -p "Enter Kubernetes version (e.g., 1.30): " K8sVersion
     read -p "Enter the kubeadm, kubectl, kubecli version (e.g., 1.30.1): " KubeAdmVersion
     read -p "Enter (master/worker): " MW
     centos_installer
 elif [ $selected_option = "Ubuntu" ]; then
-    read -p "Enter Kubernetes version (e.g., 1.31): " K8sVersion
+    read -p "Enter Kubernetes version (e.g., 1.30): " K8sVersion
     read -p "Enter the kubeadm, kubectl, kubecli version (e.g., 1.30.1): " KubeAdmVersion
     read -p "Enter (master/worker): " MW
     ubuntu_installer
